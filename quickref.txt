@@ -1,0 +1,538 @@
+Dart Quick Reference
+=====================
+:author:	Sebastien Douche
+:email:		<sdouche@gmail.com>
+:revdate:      2013/08/12
+:revnumber:  0.1
+:toc2:
+
+[NOTE]
+.General
+=====================================================================
+. The Dart application begins running a single top level function main().
+. Runtime modes
+.. *Production mode* is the default runtime mode of a Dart program, optimized for speed. Production mode ignores assert statements and static types.
+.. *Checked mode* is a developer-friendly mode that helps you catch some type errors during runtime.
+. Dart supports two levels of privacy: *public* and *private*.
+.. A declaration is private if its name begins with an underscore (the +_+ character) otherwise it is public. 
+. It is a compile-time error if there is more than one entity with the same name declared in the same scope.
+. Dart code is *always single threaded*.
+.. There is no shared-state concurrency in Dart.
+.. Concurrency is supported via actor-like entities called isolates.
+.. An isolate is a unit of concurrency. It has its own memory and its own thread of control.
+.. Isolates communicate by message passing. No mutable state is ever shared between isolates.
+=====================================================================
+
+Keywords
+--------
+
+[width="50%"]
+|===================================================================
+|abstract 	|continue	|factory	|import		|return		|try
+|as			|default	|false		|in			|set		|typedef
+|assert		|do			|final		|is			|static		|var
+|break		|dynamic	|finally	|library	|super		|void
+|case		|else		|for		|new		|switch		|while
+|catch		|export		|get		|null		|this		|with
+|class		|external	|if			|operator	|throw	 
+|const		|extends	|implements	|part		|true	 
+|====================================================================
+
+Comments
+--------
+
+[source,dart]
+----
+// A single-line comment
+
+/*
+A multi-line
+comment
+*/
+
+/** Documentation comments
+* Inside a documentation comment, the Dart compiler ignores all text unless it is enclosed in brackets.
+* Using brackets, you can refer to classes, methods, fields, top-level variables, functions, and parameters.
+* The names in brackets are resolved in the lexical scope of the documented program element.
+*/
+----
+
+Naming Conventions
+------------------
+
+* Constant variables: +PI+, +I_AM_A_CONSTANT+.
+* Functions (including getters, setters, methods and local or library functions): +camlCase+, +dart4TheWorld+.
+* Types (including classes, type variables and type aliases): +CamlCase+, +Dart4TheWorld+.
+* Type variables are short: +T+, +S+, +K+, +V+ , +E+.
+* Libraries or library prefixes: +mylib+, +my_favorite_library+.
+
+Variable Declaration
+--------------------
+
+[source,dart]
+----
+var myVar;              // Uninitialized variable, value is null (even numeric types)
+var myVar = value;      // Initialized variable
+
+type myVar;             // Static type are optionnal
+type myVar = value;
+
+final myVar = value;    // A final variable can be set only once
+const myVar = value;    // A const variable is a compile-time constant
+----
+
+Types
+-----
+
+Built-in Types: number, string, boolean, list, map. You can initialize an object of any of these special types using a literal.
+
+void
+~~~~
+
+The special type void may only be used as the return type of a function. 
+
+dynamic
+~~~~~~~
+
+The built-in identifier dynamic denotes the unknown type. 
+
+null
+~~~~
+
+No value.
+
+Number
+~~~~~~
+
+[source,dart]
+----
+int    i1 = 1;                         // Arbitrary length
+double d1 = 2.4;                       // 64 bits floating-point numbers
+----
+
+String
+~~~~~~
+
+[source,dart]
+----
+String m1    = "Hello World";          // Single or double quote
+String m2    = "'Hello' World";        // Mixed quotes
+String m3    = r"Hello\ World";        // Raw string. Ignore escape characters
+String m4    = '''Hello                // Multi-line
+World''';
+String m5    = "Hello $foo";           // Interpolation
+----
+
+Boolean
+~~~~~~~
+
+Dart has *exactly one true value*. Equility operators (+==+, +!=+) produce a boolean value.
+
+[source,dart]
+----
+bool b1 = true;
+----
+
+List
+~~~~
+
+Ordered set of objects, implements the Collection interface.
+
+[source,dart]
+----
+List    l1 =  new List();              // Empty List using constructor syntax
+List    l2 = [];                       // Empty List using  litteral syntax
+List    l3 = [1, 2];
+List    l4 = [[1], [3, 4]];             // List of lists
+List<T> l5 = new List<T>();             // Empty Typed List
+
+var value = l[1];                       // Read value using indexer
+l[1]      = value;                      // Writre value ising indexer
+----
+
+Map
+~~~
+
+[source,dart]
+----
+Map m1 = new Map();                    // Empty Generic Map using constructor syntax
+Map m2 = {};                           // Empty Map using litteral syntax
+Map m3 = {"k1": 1, "k2": 40};
+Map<KT, VT> m4 = new Map<KT,VT>();     // Empty Typed Map
+
+var myValue = myMap[key];              // Read value using indexer
+myMap[key] = value;                    // Writre value ising indexer
+----
+
+Function
+~~~~~~~~
+
+
+Function close over variables in their surrounding scope.
+
+[source,dart]
+----
+() {}                                  // Anonymous function: Minimal Longhand version
+() => ;                                // Anonymous function: Minimal Shorthand version, return implicitly nil
+
+funcName() {}                          // Named function: Longhand version
+funcName() => ;                        // Named function: Shorthand version
+funcName() { return value }            // Return an explicitly value
+
+funcName(T param) {}                   // Mandatory Parameter
+funcName(T param, [type param]) {}     // Optional Parameter (default to null)
+funcName(Tparam, [T param=value]) {}   // Optional Parameter with default value
+----
+
+.Functions are first-class object, you can:
+******************************************************************
+- declare a function in a top level scope or in another code block
+- assigning it into a variable
+- pass it as an argument to another function 
+- reusing it as a return type from another function
+******************************************************************
+
+Flow Control
+~~~~~~~~~~~~
+
+if / else
+^^^^^^^^^
+
+condition *must be a boolean* (relational and logical operators return a boolean value).
+
+[source,dart]
+----
+if (condition) {};                      // if
+if (condition) {} else {};              // if and else
+----
+
+switch
+^^^^^^
+
+Switch statement compare integer, string, or compile-time constants using +==+. The compared objects must all be instances of the same class (and not of any of its subtypes), and the class must not override +==+.
+
+[source,dart]
+----
+switch(value) {
+	case condition: ...;
+	case condition: ...;
+	default: ...;
+}
+----
+
+.Each non-empty case clause ends with:
+**************************************
+- A break statement
+- A continue statement
+- A throw statement
+- A return statement
+**************************************
+
+Assert
+^^^^^^
+
+Assert statements *work only in checked mode*. They have no effect in production mode.
+
+[source,dart]
+----
+assert(expression);                    // If the expression’s value is true, the execution continues
+                                       // Otherwise, an exception (an AssertionError) is thrown
+----
+
+Iterating
+~~~~~~~~~
+
+for loop
+^^^^^^^^
+
+Closures inside of Dart’s for loops capture the value of the index.
+
+[source,dart]
+----
+for(init, condition, increment) {};    // Classical for
+for(var value in Object) {};           // Iterate
+----
+
+while loop
+^^^^^^^^^^
+
+[source,dart]
+----
+while(condition) {};                   // A while loop evaluates the condition before the loop
+do {} while(condition);	               // A do-while loop evaluates the condition after the loop
+----
+
+Break and Continue
+^^^^^^^^^^^^^^^^^^
+
+Use break to stop looping:
+
+[source,dart]
+----
+while (...) {
+  if (...) break;
+}
+----
+
+Use continue to skip to the next loop iteration:
+
+[source,dart]
+----
+for (...) {
+  if (...) {
+    continue;
+  }
+  ...
+}
+----
+
+Exception
+---------
+
+Exception is an expression, you can throw exceptions in => statements, as well as anywhere else that allows expressions.
+
+Throw
+~~~~~~
+
+Raising an exception.
+
+[source,dart]
+----
+throw new ExpectException('Error');
+throw 'Error';
+----
+
+Try / Catch / Finally
+~~~~~~~~~~~~~~~~~~~~~
+
+Catching an exception stops the exception from propagating.
+
+[source,dart]
+----
+try {
+  // Risky code
+} catch(e) {
+  // Handle the exception
+} finally {
+  // Then clean up
+}
+----
+
+Class
+-----
+
+[source,dart]
+----
+class MyClass {}
+
+MyClass instance1 = MyClass()
+final MyClass instance2 = MyClass()
+----
+
+Property
+~~~~~~~~
+
+[source,dart]
+----
+class MyClass {
+	var attr;
+	final var attr = value; 	// constant
+	static var attr = value;	// static property
+}
+
+var instance = MyClass()
+instance.attr = value
+----
+
+Getter / Setter
+~~~~~~~~~~~~~~~
+
+[source,dart]
+----
+class MyClass {
+	var _attr;        		// private attribute
+	get attr => _attr;		// getter
+	set attr(value) {};		// setter
+}
+----
+
+Method
+~~~~~~
+
+The +this+ keyword is implied when it isn't explicitly used.
+Method a full access to others methods and properties of the instance.
+
+[source,dart]
+----
+class MyClass {
+	void aMethod() {};
+	static aMethod() {};	// Static method
+}
+
+var instance = new MyClass();
+instance.aMethod();
+----
+
+Overridable Operators
+^^^^^^^^^^^^^^^^^^^^^
+
+Operators that can be overridden: 
+<	+	|	[]
+>	/	^	[]=
+<=	~/	&	~
+>=	*	<<	==
+–	%	>>	 
+
+Constructor
+~~~~~~~~~~~
+
+The +new+ keyword calls the class's constructor method.
+If no constructor is defined, it's equivalent to an empty constructor.
+
+[source,dart]
+----
+class MyClass{
+	MyClass()		// Empty constructor
+}
+----
+
+When you use the this keyword in the constructor's parameter definition, Dart set the property with the same name.
+
+[source,dart]
+----
+class MyClass {
+	var attr;
+
+	MyClass(this.attr = 0) {}
+}
+----
+
+The initialization block appears after the argument list and before the constructor opening curly bracket.
+
+[source,dart]
+----
+class MyClass {
+	final var attr;
+
+	MyClass(attr):
+		attr = attr {}
+}
+----
+
+Named constructor
+~~~~~~~~~~~~~~~~~
+
+A class can have multiple named constructors.
+
+[source,dart]
+----
+class MyClass{
+	MyClass()                          // Empty constructor
+	MyClass.Another()                  // Another Constructor
+}
+
+instance1 = new MyClass();
+instance2 = new MyClass.Another();
+----
+
+Factory constructor
+~~~~~~~~~~~~~~~~~~~
+
+A factory constructor allows the class to decide how the class is instancied.
+
+[source,dart]
+----
+class MyClass{
+	MyClass()			
+	factory MyClass.Another() {	       // Factory Constructor
+		var inst = new MyClass();
+		return inst;
+	}
+}
+
+instance1 = new MyClass();
+instance2 = MyClass.Another();
+----
+
+Class inheritance
+~~~~~~~~~~~~~~~~~
+
+Classes can form an inheritance hierarchy, where subclasses add of override methods.
+
+[source,dart]
+----
+class OtherClass extends MyClass {}
+
+OtherClass instance1 = new OtherClass();
+MyClass    instance2 = new OtherClass();
+----
+
+Abstract Class
+~~~~~~~~~~~~~~
+
+[source,dart]
+----
+abstract class MyClass {               // The keyword abstract is optionnal
+	void MyMethod();                   // No abstract keyword implies abstract method
+}
+----
+
+Interface
+~~~~~~~~~
+
+Every class has an implicit interface: The list of public properties and methods.
+
+[source,dart]
+----
+class OtherClass implements MyClass {}
+----
+
+Abstract classes have an implicit interface.
+
+[source,dart]
+----
+class IMyClass {
+	void method();
+}
+
+class MyClass implements IMyClass {
+	void method() { // Code }
+}
+----
+
+Library
+-------
+
+- A library is one or more Dart files linked together.
+- A library that contains a main() function can be used as an entry-point.
+- Anything prefixed with an +_+ is defined as private to that library.
+
+Using Libraries
+~~~~~~~~~~~~~~~
+
+[source,dart]
+----
+import "dart:html";                    // Imports builtin library
+import "package:path/to/file.dart";    // Imports library from path
+import "package:lib/f1.dart" show foo; // Import only foo
+import "package:lib/f2.dart" hide foo; // Import all names EXCEPT foo
+----
+
+Declaring a library
+~~~~~~~~~~~~~~~~~~~
+
+[source,dart]
+----
+library my_library;                    // Librarty definition
+part "src/other.dart";                 // Links to another source file (other.dart must have the keyword part of)
+----
+
+Documentation
+-------------
+
+- https://www.dartlang.org/docs/spec/[The Dart Programming Language Specification]
+- http://api.dartlang.org/[Dart API]
+- https://www.dartlang.org/articles/style-guide/[Dart Style Guide]
+- https://www.dartlang.org/articles/doc-comment-guidelines/[Guidelines for Dart Doc Comments]
+- https://www.dartlang.org/support/faq.html[FAQ]
+- https://www.dartlang.org/docs/cookbook/[Dart Cockbook]
